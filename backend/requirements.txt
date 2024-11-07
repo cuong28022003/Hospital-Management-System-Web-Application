@@ -1,0 +1,4 @@
+npm i bcrypt cloudinary nodemon cookie-parser cors dotenv express mongoose mongodb express-fileupload jsonwebtoken validator
+
+#run
+npm run dev
