@@ -132,6 +132,20 @@ export const logoutAdmin = catchAsyncErrors(async (req, res, next) => {
     });
 });
 
+// Logout function for dashboard doctor
+export const logoutDoctor = catchAsyncErrors(async (req, res, next) => {
+  res
+    .status(201)
+    .cookie("doctorToken", "", {
+      httpOnly: true,
+      expires: new Date(Date.now()),
+    })
+    .json({
+      success: true,
+      message: "Doctor Logged Out Successfully.",
+    });
+});
+
 // Logout function for frontend patient
 export const logoutPatient = catchAsyncErrors(async (req, res, next) => {
   res
@@ -217,6 +231,87 @@ export const addNewDoctor = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: "New Doctor Registered",
+    doctor,
+  });
+});
+export const deleteDoctor = catchAsyncErrors(async (req, res, next) => {
+  const doctorId = req.params.id;
+  
+  const doctor = await User.findById(doctorId);
+  if (!doctor || doctor.role !== "Doctor") {
+    return next(new ErrorHandler("Doctor Not Found!", 404));
+  }
+
+  // Nếu có avatar trên Cloudinary, xóa luôn
+  if (doctor.docAvatar && doctor.docAvatar.public_id) {
+    await cloudinary.uploader.destroy(doctor.docAvatar.public_id);
+  }
+
+  // Sử dụng findByIdAndDelete để xóa bác sĩ
+  await User.findByIdAndDelete(doctorId);
+  
+  res.status(200).json({
+    success: true,
+    message: "Doctor Deleted Successfully",
+  });
+});
+
+
+// Cập nhật thông tin bác sĩ
+export const updateDoctor = catchAsyncErrors(async (req, res, next) => {
+  const doctorId = req.params.id;
+
+  // Tìm bác sĩ cần cập nhật
+  let doctor = await User.findById(doctorId);
+  if (!doctor || doctor.role !== "Doctor") {
+    return next(new ErrorHandler("Doctor Not Found!", 404));
+  }
+
+  const { firstName, lastName, email, phone, nic, dob, gender, doctorDepartment } = req.body;
+
+  // Cập nhật avatar nếu có avatar mới trong request
+  if (req.files && req.files.docAvatar) {
+    const { docAvatar } = req.files;
+    const allowedFormats = ["image/png", "image/jpeg", "image/webp"];
+
+    if (!allowedFormats.includes(docAvatar.mimetype)) {
+      return next(new ErrorHandler("File Format Not Supported!", 400));
+    }
+
+    // Xóa avatar cũ trên Cloudinary nếu có
+    if (doctor.docAvatar && doctor.docAvatar.public_id) {
+      await cloudinary.uploader.destroy(doctor.docAvatar.public_id);
+    }
+
+    // Tải avatar mới lên Cloudinary
+    const cloudinaryResponse = await cloudinary.uploader.upload(docAvatar.tempFilePath);
+    if (!cloudinaryResponse || cloudinaryResponse.error) {
+      console.error("Cloudinary Error:", cloudinaryResponse.error || "Unknown Cloudinary error");
+      return next(new ErrorHandler("Failed To Upload Doctor Avatar To Cloudinary", 500));
+    }
+
+    // Cập nhật URL và public_id của avatar
+    doctor.docAvatar = {
+      public_id: cloudinaryResponse.public_id,
+      url: cloudinaryResponse.secure_url,
+    };
+  }
+
+  // Cập nhật các thông tin khác của bác sĩ
+  doctor.firstName = firstName || doctor.firstName;
+  doctor.lastName = lastName || doctor.lastName;
+  doctor.email = email || doctor.email;
+  doctor.phone = phone || doctor.phone;
+  doctor.nic = nic || doctor.nic;
+  doctor.dob = dob || doctor.dob;
+  doctor.gender = gender || doctor.gender;
+  doctor.doctorDepartment = doctorDepartment || doctor.doctorDepartment;
+
+  await doctor.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Doctor Updated Successfully",
     doctor,
   });
 });
