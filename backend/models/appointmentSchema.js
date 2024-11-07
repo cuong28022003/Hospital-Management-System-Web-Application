@@ -79,6 +79,11 @@
       ref: "WorkShift",
       required: [true, "WorkShift Id Is Required!"],
     },
+    workShiftId: {
+      type: mongoose.Schema.ObjectId,
+      ref: "WorkShift",
+      required: [true, "Work Shift ID is required!"],
+    },
     status: {
       type: String,
       enum: ["Pending", "Accepted", "Rejected"],

@@ -2,6 +2,7 @@ import { catchAsyncErrors } from "../middlewares/catchAsyncErrors.js";
 import ErrorHandler from "../middlewares/errorMiddleware.js";
 import { Appointment } from "../models/appointmentSchema.js";
 import { User } from "../models/userSchema.js";
+import { WorkShift } from "../models/workShiftSchema.js";
 
 export const postAppointment = catchAsyncErrors(async (req, res, next) => {
   const {
@@ -18,6 +19,7 @@ export const postAppointment = catchAsyncErrors(async (req, res, next) => {
     doctor_lastName,
     hasVisited,
     address,
+    workShiftId,
   } = req.body;
   if (
     !firstName ||
@@ -31,7 +33,8 @@ export const postAppointment = catchAsyncErrors(async (req, res, next) => {
     !department ||
     !doctor_firstName ||
     !doctor_lastName ||
-    !address
+    !address ||
+    !workShiftId
   ) {
     return next(new ErrorHandler("Please Fill Full Form!", 400));
   }
@@ -53,6 +56,15 @@ export const postAppointment = catchAsyncErrors(async (req, res, next) => {
       )
     );
   }
+
+  // Xác thực workShiftId
+  const workShift = await WorkShift.findById(workShiftId);
+  if (!workShift || workShift.doctorId.toString() !== doctor._id.toString()) {
+    return next(
+      new ErrorHandler("Invalid or unavailable work shift selected", 400)
+    );
+  }
+
   const doctorId = isConflict[0]._id;
   const patientId = req.user._id;
   const appointment = await Appointment.create({
@@ -73,6 +85,7 @@ export const postAppointment = catchAsyncErrors(async (req, res, next) => {
     address,
     doctorId,
     patientId,
+    workShiftId,
   });
   res.status(200).json({
     success: true,
