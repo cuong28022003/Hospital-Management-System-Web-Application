@@ -132,3 +132,40 @@ export const deleteAppointment = catchAsyncErrors(async (req, res, next) => {
     message: "Appointment Deleted!",
   });
 });
+export const getAppointmentsByDoctor = catchAsyncErrors(async (req, res, next) => {
+  const { doctorId } = req.params; 
+  
+  if (!doctorId) {
+    return next(new ErrorHandler("Doctor ID is required", 400));
+  }
+  
+  const appointments = await Appointment.find({ doctorId });
+  
+  if (!appointments || appointments.length === 0) {
+    return next(new ErrorHandler("No appointments found for this doctor", 404));
+  }
+
+  res.status(200).json({
+    success: true,
+    appointments,
+  });
+});
+export const getAppointmentsByPatient = catchAsyncErrors(async (req, res, next) => {
+  const { patientId } = req.params;
+
+  if (!patientId) {
+    return next(new ErrorHandler("Patient ID is required", 400));
+  }
+
+  const appointments = await Appointment.find({ patientId });
+
+  if (!appointments || appointments.length === 0) {
+    return next(new ErrorHandler("No appointments found for this patient", 404));
+  }
+
+  res.status(200).json({
+    success: true,
+    appointments,
+  });
+});
+
