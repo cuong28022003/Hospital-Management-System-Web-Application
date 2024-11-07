@@ -45,7 +45,7 @@ const Sidebar = () => {
         setShow(!show);
     };
     const gotoAddNewDoctor = () => {
-        navigateTo("/doctor/addnew");
+        navigateTo("/doctors/addnew");
         setShow(!show);
     };
     const gotoAddNewAdmin = () => {
