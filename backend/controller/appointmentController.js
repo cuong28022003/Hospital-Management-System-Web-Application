@@ -169,7 +169,6 @@ export const getAppointmentsByPatient = catchAsyncErrors(async (req, res, next) 
   });
 });
 
-// Lấy danh sách ca làm việc khả dụng của bác sĩ
 export const getAvailableShiftsForDoctor = catchAsyncErrors(async (req, res, next) => {
   const { doctorId, appointment_date } = req.query;
 
@@ -177,11 +176,10 @@ export const getAvailableShiftsForDoctor = catchAsyncErrors(async (req, res, nex
     return next(new ErrorHandler("Please provide doctor ID and appointment date", 400));
   }
 
-  // Tìm các ca làm việc có `doctorId`, ngày là `appointment_date`, và trạng thái `available`
   const availableShifts = await WorkShift.find({
     doctorId,
     date: appointment_date,
-    status: "available",
+    status: "Available",
   });
 
   if (!availableShifts.length) {

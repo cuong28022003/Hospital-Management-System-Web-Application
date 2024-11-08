@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 
-// Khởi tạo các ca làm việc với thời gian cố định
 const shiftTimes = [
   "7AM - 8AM",
   "8AM - 9AM",

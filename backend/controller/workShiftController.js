@@ -90,7 +90,7 @@ export const deleteWorkShift = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Work shift not found!", 404));
   }
 
-  await workShift.remove();
+  await workShift.deleteOne();
 
   res.status(200).json({
     success: true,
@@ -108,7 +108,9 @@ export const getWorkShiftsByDate = catchAsyncErrors(async (req, res, next) => {
   const workShifts = await WorkShift.find({ date });
 
   if (workShifts.length === 0) {
-    return next(new ErrorHandler("No work shifts found for the specified date.", 404));
+    return next(
+      new ErrorHandler("No work shifts found for the specified date.", 404)
+    );
   }
 
   res.status(200).json({
@@ -118,25 +120,34 @@ export const getWorkShiftsByDate = catchAsyncErrors(async (req, res, next) => {
 });
 
 // Lấy danh sách ca làm việc khả dụng của bác sĩ
-export const getAvailableShiftsForDoctor = catchAsyncErrors(async (req, res, next) => {
-  const { doctorId, appointment_date } = req.query;
+export const getAvailableShiftsForDoctor = catchAsyncErrors(
+  async (req, res, next) => {
+    const { doctorId, appointment_date } = req.query;
 
-  if (!doctorId || !appointment_date) {
-    return next(new ErrorHandler("Please provide doctor ID and appointment date", 400));
+    if (!doctorId || !appointment_date) {
+      return next(
+        new ErrorHandler("Please provide doctor ID and appointment date", 400)
+      );
+    }
+
+    const availableShifts = await WorkShift.find({
+      doctorId,
+      date: appointment_date,
+      status: "Available",
+    });
+
+    if (!availableShifts.length) {
+      return next(
+        new ErrorHandler(
+          "No available shifts found for this doctor on the selected date",
+          404
+        )
+      );
+    }
+
+    res.status(200).json({
+      success: true,
+      availableShifts,
+    });
   }
-
-  const availableShifts = await WorkShift.find({
-    doctorId,
-    date: appointment_date,
-    status: "Available",
-  });
-
-  if (!availableShifts.length) {
-    return next(new ErrorHandler("No available shifts found for this doctor on the selected date", 404));
-  }
-
-  res.status(200).json({
-    success: true,
-    availableShifts,
-  });
-});
+);

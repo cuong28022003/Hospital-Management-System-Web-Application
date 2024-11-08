@@ -16,26 +16,15 @@ import {
 
 const router = express.Router();
 
-router.post("/post", isPatientAuthenticated, postAppointment);
-router.get("/getall", isAdminAuthenticated, getAllAppointments);
-router.put("/update/:id", isAdminAuthenticated, updateAppointmentStatus);
-router.delete("/delete/:id", isAdminAuthenticated, deleteAppointment);
-router.get(
-  "/available-shifts",
-  isPatientAuthenticated,
-  getAvailableShiftsForDoctor
-);
+router.post("/new", isPatientAuthenticated, postAppointment);
+router.get("/all", isAdminAuthenticated, getAllAppointments);
+router.put("/:id", isAdminAuthenticated, updateAppointmentStatus);
+router.delete("/:id", isAdminAuthenticated, deleteAppointment);
+router.get("/available-shifts",isPatientAuthenticated, getAvailableShiftsForDoctor);
 
-router.get(
-  "/doctorgetall/:doctorId",
-  isDoctorAuthenticated,
-  getAppointmentsByDoctor
-);
-router.put("/doctorupdate/:id", isDoctorAuthenticated, updateAppointmentStatus);
-router.delete("/doctordelete/:id", isDoctorAuthenticated, deleteAppointment);
-router.get(
-  "/patientgetall/:patientId",
-  isPatientAuthenticated,
-  getAppointmentsByPatient
-);
+router.get("/doctors/:id", isDoctorAuthenticated, getAppointmentsByDoctor);
+router.put("/doctors/:id", isDoctorAuthenticated, updateAppointmentStatus);
+router.delete("/doctors/:id", isDoctorAuthenticated, deleteAppointment);
+
+router.get("/patients/:id", isPatientAuthenticated, getAppointmentsByPatient);
 export default router;

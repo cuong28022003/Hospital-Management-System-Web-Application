@@ -9,9 +9,9 @@ import { isAdminAuthenticated } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-router.post("/addnew", isAdminAuthenticated, createWorkShift);
-router.put("/update/:id", isAdminAuthenticated, updateWorkShift);
-router.delete("/delete/:id", isAdminAuthenticated, deleteWorkShift);
-router.get("/by-date", isAdminAuthenticated, getWorkShiftsByDate); 
+router.post("/", isAdminAuthenticated, createWorkShift);
+router.put("/:id", isAdminAuthenticated, updateWorkShift);
+router.delete("/:id", isAdminAuthenticated, deleteWorkShift);
+router.get("/date", isAdminAuthenticated, getWorkShiftsByDate); 
 
 export default router;

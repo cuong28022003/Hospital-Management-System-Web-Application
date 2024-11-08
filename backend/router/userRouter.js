@@ -20,19 +20,19 @@ import {
 
 const router = express.Router();
 
-router.post("/patient/register", patientRegister);
+router.post("/patients", patientRegister);
 router.post("/login", login);
-router.post("/admin/addnew", isAdminAuthenticated, addNewAdmin);
+router.post("/admins", isAdminAuthenticated, addNewAdmin);
 router.get("/doctors", getAllDoctors);
-router.get("/admin/me", isAdminAuthenticated, getUserDetails);
-router.get("/patient/me", isPatientAuthenticated, getUserDetails);
-router.get("/doctor/me", isDoctorAuthenticated, getUserDetails);
-router.get("/admin/logout", isAdminAuthenticated, logoutAdmin);
-router.get("/patient/logout", isPatientAuthenticated, logoutPatient);
-router.get("/doctor/logout", isDoctorAuthenticated, logoutDoctor);
+router.get("/admins/me", isAdminAuthenticated, getUserDetails);
+router.get("/patients/me", isPatientAuthenticated, getUserDetails);
+router.get("/doctors/me", isDoctorAuthenticated, getUserDetails);
+router.get("/admins/logout", isAdminAuthenticated, logoutAdmin);
+router.get("/patients/logout", isPatientAuthenticated, logoutPatient);
+router.get("/doctors/logout", isDoctorAuthenticated, logoutDoctor);
 router.post("/doctors/addnew", isAdminAuthenticated, addNewDoctor);
-router.put("/doctors/update/:id", isAdminAuthenticated, updateDoctor);
-router.delete("/doctors/delete/:id", isAdminAuthenticated, deleteDoctor);
+router.put("/doctors/:id", isAdminAuthenticated, updateDoctor);
+router.delete("/doctors/:id", isAdminAuthenticated, deleteDoctor);
 
 
 export default router;
