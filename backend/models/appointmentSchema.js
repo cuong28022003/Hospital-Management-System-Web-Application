@@ -74,15 +74,14 @@
       ref: "User",
       required: [true, "Patient Id Is Required!"],
     },
-    workShiftId: {
-      type: mongoose.Schema.ObjectId,
-      ref: "WorkShift",
-      required: [true, "WorkShift Id Is Required!"],
+    shiftTime: {
+      type: String,
+      required: [true, "Shift Time Is Required!"],
     },
     workShiftId: {
       type: mongoose.Schema.ObjectId,
       ref: "WorkShift",
-      required: [true, "Work Shift ID is required!"],
+      required: [true, "Work Shift Id Is Required!"],
     },
     status: {
       type: String,

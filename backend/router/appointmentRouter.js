@@ -1,9 +1,11 @@
 import express from "express";
 import {
-  deleteAppointment,
+  getAppointmentById,
   getAllAppointments,
   postAppointment,
+  updateAppointment,
   updateAppointmentStatus,
+  deleteAppointment,
   getAppointmentsByDoctor,
   getAppointmentsByPatient,
   getAvailableShiftsForDoctor,
@@ -16,10 +18,13 @@ import {
 
 const router = express.Router();
 
-router.post("/new", isPatientAuthenticated, postAppointment);
-router.get("/all", isAdminAuthenticated, getAllAppointments);
-router.put("/:id", isAdminAuthenticated, updateAppointmentStatus);
+router.get("", isAdminAuthenticated, getAllAppointments);
+router.get("/:id", isAdminAuthenticated, getAppointmentById);
+router.post("", isPatientAuthenticated, postAppointment);
+router.put("/:id", isAdminAuthenticated, updateAppointment);
+router.put("/:id/status", isAdminAuthenticated, updateAppointmentStatus);
 router.delete("/:id", isAdminAuthenticated, deleteAppointment);
+
 router.get("/available-shifts",isPatientAuthenticated, getAvailableShiftsForDoctor);
 
 router.get("/doctors/:id", isDoctorAuthenticated, getAppointmentsByDoctor);

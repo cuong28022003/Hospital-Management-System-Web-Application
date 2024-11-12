@@ -1,15 +1,38 @@
 import { WorkShift } from "../models/workShiftSchema.js";
 import { catchAsyncErrors } from "../middlewares/catchAsyncErrors.js";
 import ErrorHandler from "../middlewares/errorMiddleware.js";
+import { User} from "../models/userSchema.js"
 
 export const createWorkShift = catchAsyncErrors(async (req, res, next) => {
-  const { date, shiftNumber, doctorId } = req.body;
+  const { date, shiftNumber, doctor_firstName, doctor_lastName} = req.body;
 
-  if (!date || !shiftNumber || !doctorId) {
+  if (!date || !shiftNumber || !doctor_firstName || !doctor_lastName) {
     return next(
-      new ErrorHandler("Date, shift number, and doctor ID are required!", 400)
+      new ErrorHandler("Date, shift number, and doctor's name are required!", 400)
     );
   }
+
+  const isConflict = await User.find({
+    firstName: doctor_firstName,
+    lastName: doctor_lastName,
+    role: "Doctor",
+  });
+  
+  if (isConflict.length === 0) {
+    return next(new ErrorHandler("Doctor not found", 404));
+  }
+
+  if (isConflict.length > 1) {
+    return next(
+      new ErrorHandler(
+        "Doctors Conflict! Please Contact Through Email Or Phone!",
+        400
+      )
+    );
+  }
+
+  const doctorId = isConflict[0]._id;
+  const adminId = req.user._id;
 
   const existingShift = await WorkShift.findOne({
     date: new Date(date).toISOString().slice(0, 10), // Chuyển đổi sang định dạng chỉ lấy ngày
@@ -27,9 +50,14 @@ export const createWorkShift = catchAsyncErrors(async (req, res, next) => {
   }
 
   const workShift = await WorkShift.create({
-    date: new Date(date),
+    date: date,
     shiftNumber,
-    doctorId,
+    doctor: {
+      firstName: doctor_firstName,
+      lastName: doctor_lastName
+    },
+    doctorId: doctorId,
+    adminId: adminId
   });
 
   res.status(201).json({
@@ -98,13 +126,23 @@ export const deleteWorkShift = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+export const getAllWorkShifts = catchAsyncErrors(async (req, res, next) => {
+  // Lấy tất cả các work shifts từ cơ sở dữ liệu
+  const workShifts = await WorkShift.find();
+
+  // Trả về danh sách work shifts
+  res.status(200).json({
+    success: true,
+    workShifts,
+  });
+});
+
 export const getWorkShiftsByDate = catchAsyncErrors(async (req, res, next) => {
   const { date } = req.query; // Lấy ngày từ query parameter
 
   if (!date) {
     return next(new ErrorHandler("Please provide a date.", 400));
   }
-
   const workShifts = await WorkShift.find({ date });
 
   if (workShifts.length === 0) {
@@ -151,3 +189,21 @@ export const getAvailableShiftsForDoctor = catchAsyncErrors(
     });
   }
 );
+
+export const getWorkShiftById = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+
+  // Tìm work shift dựa trên ID
+  const workShift = await WorkShift.findById(id);
+
+  // Kiểm tra nếu work shift không tồn tại
+  if (!workShift) {
+    return next(new ErrorHandler("Work Shift not found", 404));
+  }
+
+  // Trả về work shift nếu tìm thấy
+  res.status(200).json({
+    success: true,
+    workShift,
+  });
+});

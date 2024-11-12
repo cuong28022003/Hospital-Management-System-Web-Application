@@ -19,7 +19,8 @@ export const postAppointment = catchAsyncErrors(async (req, res, next) => {
     doctor_lastName,
     hasVisited,
     address,
-    workShiftId,
+    shiftTime,
+    workShiftId
   } = req.body;
   if (
     !firstName ||
@@ -34,6 +35,7 @@ export const postAppointment = catchAsyncErrors(async (req, res, next) => {
     !doctor_firstName ||
     !doctor_lastName ||
     !address ||
+    !shiftTime ||
     !workShiftId
   ) {
     return next(new ErrorHandler("Please Fill Full Form!", 400));
@@ -57,16 +59,16 @@ export const postAppointment = catchAsyncErrors(async (req, res, next) => {
     );
   }
 
-  // Xác thực workShiftId
-  const workShift = await WorkShift.findById(workShiftId);
-  if (!workShift || workShift.doctorId.toString() !== doctor._id.toString()) {
-    return next(
-      new ErrorHandler("Invalid or unavailable work shift selected", 400)
-    );
-  }
+  // const workShift = await WorkShift.findById(workShiftId);
+  // if (!workShift || workShift.doctorId.toString() !== doctor._id.toString()) {
+  //   return next(
+  //     new ErrorHandler("Invalid or unavailable work shift selected", 400)
+  //   );
+  // }
 
   const doctorId = isConflict[0]._id;
   const patientId = req.user._id;
+
   const appointment = await Appointment.create({
     firstName,
     lastName,
@@ -85,8 +87,18 @@ export const postAppointment = catchAsyncErrors(async (req, res, next) => {
     address,
     doctorId,
     patientId,
-    workShiftId,
+    shiftTime,
+    workShiftId
   });
+
+  let workShift = await WorkShift.findById(workShiftId);
+
+  if (!workShift) {
+    return next(new ErrorHandler("Work shift not found!", 404));
+  }
+
+  workShift.status = "Booked";
+  await workShift.save();
   res.status(200).json({
     success: true,
     appointment,
@@ -101,6 +113,48 @@ export const getAllAppointments = catchAsyncErrors(async (req, res, next) => {
     appointments,
   });
 });
+
+export const getAppointmentById = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+
+  // Tìm kiếm cuộc hẹn theo ID
+  const appointment = await Appointment.findById(id);
+
+  // Kiểm tra nếu không tìm thấy cuộc hẹn
+  if (!appointment) {
+    return next(new ErrorHandler("Appointment not found", 404));
+  }
+
+  // Trả về thông tin cuộc hẹn nếu tìm thấy
+  res.status(200).json({
+    success: true,
+    appointment,
+  });
+});
+
+export const updateAppointment = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+
+  // Kiểm tra nếu cuộc hẹn tồn tại
+  let appointment = await Appointment.findById(id);
+  if (!appointment) {
+    return next(new ErrorHandler("Appointment not found!", 404));
+  }
+
+  // Cập nhật cuộc hẹn với dữ liệu mới từ req.body
+  appointment = await Appointment.findByIdAndUpdate(id, req.body, {
+    new: true, // Trả về cuộc hẹn sau khi đã cập nhật
+    runValidators: true, // Kiểm tra tính hợp lệ của dữ liệu
+  });
+
+  // Trả về thông tin cuộc hẹn đã được cập nhật
+  res.status(200).json({
+    success: true,
+    message: "Appointment updated successfully!",
+    appointment,
+  });
+});
+
 export const updateAppointmentStatus = catchAsyncErrors(
   async (req, res, next) => {
     const { id } = req.params;

@@ -14,7 +14,7 @@ const shiftTimes = [
 
 const workShiftSchema = new mongoose.Schema({
   date: {
-    type: Date,
+    type: String,
     required: [true, "Date is required!"],
   },
   shiftNumber: {
@@ -26,10 +26,25 @@ const workShiftSchema = new mongoose.Schema({
   shiftTime: {
     type: String,
   },
+  doctor: {
+    firstName: {
+      type: String,
+      required: [true, "Doctor Name Is Required!"],
+    },
+    lastName: {
+      type: String,
+      required: [true, "Doctor Name Is Required!"],
+    },
+  },
   doctorId: {
     type: mongoose.Schema.ObjectId,
     ref: "User",
     required: [true, "Doctor ID is required!"],
+  },
+  adminId: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+    required: [true, "Admin Id Is Required!"],
   },
   status: {
     type: String,

@@ -17,6 +17,8 @@ const AppointmentForm = () => {
   const [doctorLastName, setDoctorLastName] = useState("");
   const [address, setAddress] = useState("");
   const [hasVisited, setHasVisited] = useState(false);
+  const [shiftTime, setShiftTime] = useState("");
+  const [workShiftId, setWorkShiftId] = useState("");
 
   const departmentsArray = [
     "Pediatrics",
@@ -27,6 +29,7 @@ const AppointmentForm = () => {
     "Radiology",
     "Physical Therapy",
     "Dermatology",
+    "Chemistry",
     "ENT",
   ];
 
@@ -34,7 +37,7 @@ const AppointmentForm = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       const { data } = await axios.get(
-        "http://localhost:4000/api/v1/user/doctors",
+        "http://localhost:4000/api/users/doctors",
         { withCredentials: true }
       );
       setDoctors(data.doctors);
@@ -42,12 +45,26 @@ const AppointmentForm = () => {
     };
     fetchDoctors();
   }, []);
+
+  const [workShifts, setWorkShifts] = useState([]);
+  useEffect(() => {
+    const fetchWorkShifts = async () => {
+      const { data } = await axios.get(
+        "http://localhost:4000/api/work-shifts",
+        { withCredentials: true }
+      );
+      setWorkShifts(data.workShifts);
+      console.log(data.workShifts);
+    };
+    fetchWorkShifts();
+  }, []);
+
   const handleAppointment = async (e) => {
     e.preventDefault();
     try {
       const hasVisitedBool = Boolean(hasVisited);
       const { data } = await axios.post(
-        "http://localhost:4000/api/v1/appointment/post",
+        "http://localhost:4000/api/appointments",
         {
           firstName,
           lastName,
@@ -62,6 +79,8 @@ const AppointmentForm = () => {
           doctor_lastName: doctorLastName,
           hasVisited: hasVisitedBool,
           address,
+          shiftTime: shiftTime,
+          workShiftId: workShiftId,
         },
         {
           withCredentials: true,
@@ -170,6 +189,7 @@ const AppointmentForm = () => {
                 const [firstName, lastName] = e.target.value.split(" ");
                 setDoctorFirstName(firstName);
                 setDoctorLastName(lastName);
+                setShiftTime("");
               }}
               disabled={!department}
             >
@@ -182,6 +202,35 @@ const AppointmentForm = () => {
                     key={index}
                   >
                     {doctor.firstName} {doctor.lastName}
+                  </option>
+                ))}
+            </select>
+
+            <select
+              value={shiftTime}
+              onChange={(e) => {
+                setShiftTime(e.target.value);
+                const selectedId = e.target.selectedOptions[0].dataset.id;
+                setWorkShiftId(selectedId);
+              }}
+              disabled={!doctorFirstName || !doctorLastName || !appointmentDate}
+            >
+              <option value="">Select Shift Time</option>
+              {workShifts
+                .filter(
+                  (workShift) =>
+                    workShift.doctor.firstName === doctorFirstName &&
+                    workShift.doctor.lastName === doctorLastName &&
+                    workShift.date === appointmentDate &&
+                    workShift.status === "Available"
+                )
+                .map((workShift, index) => (
+                  <option
+                    value={workShift.shiftTime}
+                    data-id={workShift._id} // Lưu _id vào thuộc tính data-id
+                    key={index}
+                  >
+                    {workShift.shiftTime}
                   </option>
                 ))}
             </select>

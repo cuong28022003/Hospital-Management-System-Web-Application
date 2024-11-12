@@ -31,10 +31,10 @@ app.use(
     })
 );
 
-app.use("/api/v1/users", userRouter);
-app.use("/api/v1/appointments", appointmentRouter);
-app.use("/api/v1/chats", chatRouter);
-app.use("/api/v1/work-shifts", workShiftRouter);
+app.use("/api/users", userRouter);
+app.use("/api/appointments", appointmentRouter);
+app.use("/api/chats", chatRouter);
+app.use("/api/work-shifts", workShiftRouter);
 
 dbConnection();
 
